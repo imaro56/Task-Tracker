@@ -3,58 +3,82 @@ import sys
 from datetime import datetime
 
 
-def operations(args, todo_list):
+def main():
+    filename = 'database.json'
+    database = open_json(filename)
+    input_str = sys.argv[1:]
+
+    operations(database, input_str)
+    save_json(database, filename)
+
+
+def operation_rules(operation):
+    rules = [
+        {'add':{
+
+        }},
+        {'update':{}},
+        {'delete':{}},
+        {'mark-in-progress':{}},
+        {'mark-done':{}},
+        {'mark-todo':{}},
+        {'list':{}},
+
+
+    ]
+
+def operations(database, args):
     command = args[0]
     match str(command):
         case 'add':
             description = args[1]
-            add_op(description, todo_list)
+            add_op(database, description)
         case 'update':
             task_id = int(args[1])
             description = args[2]
-            update(task_id, description, todo_list)
+            update(database, task_id, description)
         case 'delete':
             task_id = int(args[1])
-            delete(task_id, todo_list)
+            delete(database, task_id)
         case 'list':
             try:
                 list_type = args[1]
             except IndexError:
                 list_type = ''
-            print_list(todo_list, list_type)
+            print_list(database, list_type)
         case 'mark-in-progress' | 'mark-done' | 'mark-todo':
             task_id = int(args[1])
-            mark(todo_list, command.replace('mark-', ''), task_id)
+            mark(database, command.replace('mark-', ''), task_id)
 
 
-def add_op(description, todo_list):
-    if todo_list:
-        task_id = todo_list[-1]['id'] + 1
+def add_op(database, description):
+    if database:
+        task_id = database[-1]['id'] + 1
     else:
         task_id = 1
 
-    todo_list.append(
+    database.append(
         {'id': task_id, 'description': description, 'status': 'todo', 'createdAt': datetime.now().strftime("%D %H:%M"),
          'updatedAt': datetime.now().strftime("%D %H:%M")})
 
     print(f'Task added successfully (ID: {task_id})')
 
 
-def update(task_id, new_description, todo_list):
-    for i in range(len(todo_list)):
-        if todo_list[i]['id'] == task_id:
-            todo_list[i]['description'] = new_description
-            todo_list[i]['updatedAt'] = datetime.now().strftime("%D %H:%M")
+def update(database, task_id, new_description):
+    for i in range(len(database)):
+        if database[i]['id'] == task_id:
+            database[i]['description'] = new_description
+            database[i]['updatedAt'] = datetime.now().strftime("%D %H:%M")
             print(f'Task updated successfully (ID: {task_id})')
             return
     print(f'Task with ID: {task_id}, does not exist!')
 
 
-def delete(task_id, todo_list):
+def delete(database, task_id):
     flag = False
-    for i in range(len(todo_list)):
-        if todo_list[i]['id'] == task_id:
-            todo_list.pop(i)
+    for i in range(len(database)):
+        if database[i]['id'] == task_id:
+            database.pop(i)
             flag = True
             break
     if flag:
@@ -63,10 +87,10 @@ def delete(task_id, todo_list):
         print(f'Task with ID: {task_id}, does not exist!')
 
 
-def print_list(todo_list, list_type):
+def print_list(database, list_type):
     is_tasks = False
     string_list = f'{'-' * 100}\n|{"ID":^4}|{"Description":^40}|{"Status":^14}|{"Created At":^18}|{"Updated At":^18}|\n{'-' * 100}\n'
-    for task in todo_list:
+    for task in database:
         if list_type in ('todo', 'in-progress', 'done') and task['status'] != list_type:
             continue
         is_tasks = True
@@ -78,11 +102,11 @@ def print_list(todo_list, list_type):
         print(f"List {"of " + list_type + " tasks " if list_type else ''}is empty(")
 
 
-def mark(todo_list, status, task_id):
-    for i in range(len(todo_list)):
-        if todo_list[i]['id'] == task_id:
-            todo_list[i]['status'] = status
-            todo_list[i]['updatedAt'] = datetime.now().strftime("%D %H:%M")
+def mark(database, status, task_id):
+    for i in range(len(database)):
+        if database[i]['id'] == task_id:
+            database[i]['status'] = status
+            database[i]['updatedAt'] = datetime.now().strftime("%D %H:%M")
             print(f'Task marked as {status} successfully (ID: {task_id})')
             return
     print(f'Task with ID: {task_id}, does not exist!')
@@ -91,24 +115,22 @@ def mark(todo_list, status, task_id):
 def open_json(name):
     try:
         with open(name, mode="r", encoding="utf-8") as read_file:
-            todo_list = json.load(read_file)
+            database = json.load(read_file)
     except (json.JSONDecodeError, FileNotFoundError):
         with open(name, mode="w", encoding="utf-8") as write_file:
-            todo_list = []
+            database = []
             json.dump([], write_file, indent=4)
-    return todo_list
+    return database
 
 
-def save_json(name, todo_list):
+def save_json(database, name):
     with open(name, mode="w", encoding="utf-8") as write_file:
-        json.dump(todo_list, write_file, indent=4)
+        json.dump(database, write_file, indent=4)
+
+
+def read_cli():
+    pass
 
 
 if __name__ == '__main__':
-    filename = 'todo_list.json'
-    line = sys.argv[1:]
-
-    array = open_json(filename)
-
-    operations(line, array)
-    save_json(filename, array)
+    main()
