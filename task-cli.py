@@ -12,66 +12,16 @@ def main():
     save_json(database, filename)
 
 
-# def operation_rules(operation):
-#     rules = [
-#         {'add':{
-#             'func': add_op,
-#             'min_args': 1,
-#             'max_args': 1,
-#             'help': 'Adds a task to your list. Structure: add "description". Example: add "Go to the gym" '
-#
-#         }},
-#         {'update':{
-#             'func': update,
-#             'min_args': 2,
-#             'max_args': 2,
-#             'help': 'Updates a task in your list. Structure: update id "description". Example: update 1 "Go to school"'
-#         }},
-#         {'delete':{
-#             'func': delete,
-#             'min_args': 1,
-#             'max_args': 1,
-#             'help': 'Removes a task from your list. Structure: delete id'
-#         }},
-#         {'mark-in-progress':{
-#             'func': mark_in_progress,
-#             'min_args': 1,
-#             'max_args': 1,
-#             'help': 'Change status of the task to "in-progress". Structure: mark-in-progress id'
-#         }},
-#         {'mark-done':{
-#             'func': mark_done,
-#             'min_args': 1,
-#             'max_args': 1,
-#             'help': 'Change status of the task to "done". Structure: mark-done id'
-#         }},
-#         {'mark-todo':{
-#             'func': mark_to_do,
-#             'min_args': 1,
-#             'max_args': 1,
-#             'help': 'Change status of the task to "to-do". Structure: mark-to-do id'
-#         }},
-#         {'list':{
-#             'func': print_list,
-#             'min_args': 0,
-#             'max_args': 1,
-#             'possible_args': ['to-do','in-progress','done'],
-#             'help': 'Prints list to the console, you can choose if you want to print tasks with certain status. Structure: list status(optional). Example1: list. Example2: list done'
-#         }},
-#
-#
-#     ]
-
 def operations(database, args):
     command = args[0]
     match str(command):
         case 'add':
-            if len(args)<2:
+            if len(args) < 2:
                 return
             description = args[1]
             add_op(database, description)
         case 'update':
-            if len(args)<3:
+            if len(args) < 3:
                 return
             try:
                 task_id = int(args[1])
