@@ -12,33 +12,78 @@ def main():
     save_json(database, filename)
 
 
-def operation_rules(operation):
-    rules = [
-        {'add':{
-
-        }},
-        {'update':{}},
-        {'delete':{}},
-        {'mark-in-progress':{}},
-        {'mark-done':{}},
-        {'mark-todo':{}},
-        {'list':{}},
-
-
-    ]
+# def operation_rules(operation):
+#     rules = [
+#         {'add':{
+#             'func': add_op,
+#             'min_args': 1,
+#             'max_args': 1,
+#             'help': 'Adds a task to your list. Structure: add "description". Example: add "Go to the gym" '
+#
+#         }},
+#         {'update':{
+#             'func': update,
+#             'min_args': 2,
+#             'max_args': 2,
+#             'help': 'Updates a task in your list. Structure: update id "description". Example: update 1 "Go to school"'
+#         }},
+#         {'delete':{
+#             'func': delete,
+#             'min_args': 1,
+#             'max_args': 1,
+#             'help': 'Removes a task from your list. Structure: delete id'
+#         }},
+#         {'mark-in-progress':{
+#             'func': mark_in_progress,
+#             'min_args': 1,
+#             'max_args': 1,
+#             'help': 'Change status of the task to "in-progress". Structure: mark-in-progress id'
+#         }},
+#         {'mark-done':{
+#             'func': mark_done,
+#             'min_args': 1,
+#             'max_args': 1,
+#             'help': 'Change status of the task to "done". Structure: mark-done id'
+#         }},
+#         {'mark-todo':{
+#             'func': mark_to_do,
+#             'min_args': 1,
+#             'max_args': 1,
+#             'help': 'Change status of the task to "to-do". Structure: mark-to-do id'
+#         }},
+#         {'list':{
+#             'func': print_list,
+#             'min_args': 0,
+#             'max_args': 1,
+#             'possible_args': ['to-do','in-progress','done'],
+#             'help': 'Prints list to the console, you can choose if you want to print tasks with certain status. Structure: list status(optional). Example1: list. Example2: list done'
+#         }},
+#
+#
+#     ]
 
 def operations(database, args):
     command = args[0]
     match str(command):
         case 'add':
+            if len(args)<2:
+                return
             description = args[1]
             add_op(database, description)
         case 'update':
-            task_id = int(args[1])
+            if len(args)<3:
+                return
+            try:
+                task_id = int(args[1])
+            except ValueError:
+                return
             description = args[2]
             update(database, task_id, description)
         case 'delete':
-            task_id = int(args[1])
+            try:
+                task_id = int(args[1])
+            except (ValueError, IndexError):
+                return
             delete(database, task_id)
         case 'list':
             try:
@@ -47,8 +92,11 @@ def operations(database, args):
                 list_type = ''
             print_list(database, list_type)
         case 'mark-in-progress' | 'mark-done' | 'mark-todo':
-            task_id = int(args[1])
-            mark(database, command.replace('mark-', ''), task_id)
+            try:
+                task_id = int(args[1])
+            except (ValueError, IndexError):
+                return
+            mark(database, command, task_id)
 
 
 def add_op(database, description):
@@ -102,7 +150,17 @@ def print_list(database, list_type):
         print(f"List {"of " + list_type + " tasks " if list_type else ''}is empty(")
 
 
-def mark(database, status, task_id):
+def mark(database, command, task_id):
+    status = ''
+    match command:
+        case 'mark-in-progress':
+            status = 'in-progress'
+        case 'mark-done':
+            status = 'done'
+        case 'mark-todo':
+            status = 'todo'
+    if status == '':
+        return
     for i in range(len(database)):
         if database[i]['id'] == task_id:
             database[i]['status'] = status
